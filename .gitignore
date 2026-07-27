@@ -1,0 +1,71 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+env.bak/
+venv.bak/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project Specific
+vectorstore/
+datasets/*.csv
+*.csv
+*.xlsx
+*.log
+*.pkl
+*.pickle
+
+# Evaluation Results
+results/
+*.png
+*.html
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# LangSmith
+.langsmith/
+langsmith/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup
+*.bak
+*.backup
