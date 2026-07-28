@@ -11,3 +11,8 @@ sentence-transformers
 pandas
 ragas
 datasets
+flask
+flask-cors
+requests
+beautifulsoup4
+duckduckgo-search

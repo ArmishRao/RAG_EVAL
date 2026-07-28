@@ -26,7 +26,6 @@ def evaluate_with_judge(inputs, outputs, reference_outputs):
 
     text = response.content.strip()
 
-    # Remove markdown if model returns ```json
     text = text.replace("```json", "")
     text = text.replace("```", "").strip()
 

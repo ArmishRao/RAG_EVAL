@@ -56,7 +56,7 @@ def main():
     print("Pakistan Legal Advisor - RAGAS Style Evaluation")
     print("=" * 70)
     
-    # Define test questions
+    #  test questions
     test_questions = [
         "What are the penalties for theft under Pakistani law?",
         "Explain the process of filing a civil suit in Pakistan.",
@@ -81,12 +81,11 @@ def main():
     print("Evaluation Results Summary")
     print("=" * 70)
     
-    # Calculate averages (ignore None values for correctness)
     avg_faithfulness = results_df["faithfulness"].mean()
     avg_answer_relevancy = results_df["answer_relevancy"].mean()
     avg_context_relevancy = results_df["context_relevancy"].mean()
     
-    print(f"\n📊 Average Scores:")
+    print(f"\n Average Scores:")
     print(f"  Faithfulness:        {avg_faithfulness:.4f}")
     print(f"  Answer Relevancy:    {avg_answer_relevancy:.4f}")
     print(f"  Context Relevancy:   {avg_context_relevancy:.4f}")
@@ -95,7 +94,7 @@ def main():
         avg_correctness = results_df["answer_correctness"].dropna().mean()
         print(f"  Answer Correctness:  {avg_correctness:.4f} (based on {len(results_df['answer_correctness'].dropna())} samples)")
     
-    print(f"\n📈 Additional Statistics:")
+    print(f"\n Additional Statistics:")
     print(f"  Average contexts retrieved: {results_df['num_contexts'].mean():.1f}")
     print(f"  Average answer length: {results_df['answer_length'].mean():.0f} characters")
     
@@ -116,7 +115,7 @@ def main():
     
     # Save results
     results_df.to_csv("custom_ragas_results.csv", index=False)
-    print(f"\n✅ Results saved to custom_ragas_results.csv")
+    print(f"\n Results saved to custom_ragas_results.csv")
     
     # Create a summary report
     summary = {
@@ -128,7 +127,7 @@ def main():
     
     summary_df = pd.DataFrame([summary])
     summary_df.to_csv("custom_ragas_summary.csv", index=False)
-    print(f"✅ Summary saved to custom_ragas_summary.csv")
+    print(f" Summary saved to custom_ragas_summary.csv")
 
 
 if __name__ == "__main__":

@@ -74,7 +74,7 @@ def evaluate_with_ragas_on_dataset(test_data_path):
 if __name__ == "__main__":
      results = evaluate(
         target,
-        data="legal_evaluation_quarter",
+        data="Experiment",
         evaluators=[
             correctness,
             faithfulness,
@@ -86,11 +86,5 @@ if __name__ == "__main__":
         max_concurrency=1,
         blocking=True,
     )
-    
-    print(results)
-    
-    # Option 2: Run RAGAS evaluation separately
-    # Uncomment if you have a test dataset
-    # ragas_results = evaluate_with_ragas_on_dataset("test_data.csv")
-    # print("\nRAGAS Evaluation Results:")
-    # print(ragas_results)
+        
+   

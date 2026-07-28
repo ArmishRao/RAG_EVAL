@@ -209,7 +209,12 @@ def ask_rag(question: str):
         "sources": docs,
         "source_type": source_type
     }
-
+def get_response_only(question: str) -> dict:
+    """
+    Simplified version of ask_rag that returns just the essential data
+    Useful for the API backend
+    """
+    return ask_rag(question)
 def main():
     print("=" * 70)
     print("  Pakistan Legal Advisor (Multi-Source Search)")
