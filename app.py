@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
+from langchain_ollama import ChatOllama
 from langchain_core.documents import Document
 from retriever import retrieve
 from prompt import prompt
@@ -11,16 +11,83 @@ import time
 from urllib.parse import quote_plus
 from web_search_fixed import search_with_fallback
 from legal_fallback import get_fallback_answer
+import tiktoken
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+from langchain_ollama import ChatOllama
+
+llm = ChatOllama(
+    model="qwen2.5:3b",
     temperature=0
 )
+
+# Token counter for context management
+def count_tokens(text: str) -> int:
+    """Count tokens in text using tiktoken."""
+    try:
+        encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        return len(encoding.encode(text))
+    except:
+        # Fallback: approximate 4 chars per token
+        return len(text) // 4
+
+def truncate_context(context: str, max_tokens: int = 4000) -> str:
+    """
+    Truncate context to stay within token limits while preserving important content.
+    Uses semantic chunking to keep the most relevant parts.
+    """
+    if count_tokens(context) <= max_tokens:
+        return context
+    
+    # Split into sentences or paragraphs
+    chunks = context.split('\n\n')
+    
+    # Score each chunk by relevance (length and legal keywords)
+    legal_keywords = ['section', 'act', 'punishment', 'penalty', 'court', 'judgment', 
+                     'law', 'legal', 'provision', 'article', 'clause', 'offence']
+    
+    scored_chunks = []
+    for chunk in chunks:
+        if not chunk.strip():
+            continue
+        # Relevance score based on legal keywords
+        score = sum(1 for kw in legal_keywords if kw in chunk.lower())
+        # Boost chunks with section numbers
+        if re.search(r'section\s+\d+', chunk.lower()):
+            score += 3
+        if re.search(r's\.\s*\d+', chunk.lower()):
+            score += 2
+        # Length penalty (very long chunks consume too many tokens)
+        chunk_tokens = count_tokens(chunk)
+        if chunk_tokens > 1000:
+            score *= 0.5
+        scored_chunks.append((score, chunk))
+    
+    # Sort by score descending
+    scored_chunks.sort(key=lambda x: x[0], reverse=True)
+    
+    # Build truncated context
+    truncated = []
+    current_tokens = 0
+    for score, chunk in scored_chunks:
+        chunk_tokens = count_tokens(chunk)
+        if current_tokens + chunk_tokens <= max_tokens:
+            truncated.append(chunk)
+            current_tokens += chunk_tokens
+        else:
+            # Try to truncate the chunk itself
+            remaining = max_tokens - current_tokens
+            if remaining > 100:
+                words = chunk.split()
+                truncated_chunk = ' '.join(words[:remaining * 4])
+                truncated.append(truncated_chunk + "...")
+            break
+    
+    return '\n\n'.join(truncated)
 
 def is_document_relevant(doc, question):
     """Check if a document is actually relevant to the question."""
@@ -101,7 +168,7 @@ def web_search_fallback(question: str):
             results = search_with_fallback(query)
             if results:
                 all_results.extend(results)
-                logger.info(f"Found {len(results)} results for: {query}")
+                logger.info(f" Found {len(results)} results for: {query}")
                 break
             
             time.sleep(0.5)
@@ -134,7 +201,7 @@ def web_search_fallback(question: str):
         return []
 
 def ask_rag(question: str):
-    """Main RAG function with fallback knowledge base."""
+    """Main RAG function with fallback knowledge base and token optimization."""
     
     # Check for fallback answer first
     fallback_answer = get_fallback_answer(question)
@@ -192,8 +259,17 @@ def ask_rag(question: str):
     else:
         source_type = "local"
     
-    # Step 3: Prepare context
+    # Step 3: Prepare and optimize context
+    # Take only the most relevant documents (limit to 3-4 to reduce tokens)
+    if len(docs) > 4:
+        docs = docs[:4]
+        logger.info(f" Limited to 4 most relevant documents")
+    
     context = "\n\n".join([doc.page_content for doc in docs])
+    
+    # Truncate context to stay within token limits
+    context = truncate_context(context, max_tokens=3500)
+    logger.info(f" Context size: {count_tokens(context)} tokens")
     
     # Step 4: Generate response
     messages = prompt.format_messages(
@@ -209,12 +285,14 @@ def ask_rag(question: str):
         "sources": docs,
         "source_type": source_type
     }
+
 def get_response_only(question: str) -> dict:
     """
-    Simplified version of ask_rag that returns just the essential data
-    Useful for the API backend
+    Simplified version of ask_rag that returns just the essential data.
+    Useful for the API backend.
     """
     return ask_rag(question)
+
 def main():
     print("=" * 70)
     print("  Pakistan Legal Advisor (Multi-Source Search)")
@@ -222,14 +300,14 @@ def main():
     print("\n Features:")
     print("   Answers from local legal documents")
     print("   Smart relevance detection")
-    print("   Web search from multiple sources (DuckDuckGo, Google, Wikipedia)")
-    print("  Fallback knowledge base for common questions")
+    print("   Web search from multiple sources")
+    print("   Fallback knowledge base for common questions")
     print("   No API keys required")
     print("\n" + "=" * 70)
     
     while True:
         try:
-            question = input(" Ask Question (or 'exit' to quit): ")
+            question = input("\n Ask Question (or 'exit' to quit): ")
             
             if question.lower() in ["exit", "quit"]:
                 print("Goodbye!")

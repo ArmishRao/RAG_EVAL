@@ -1,18 +1,28 @@
+# Core dependencies
 langchain
-langchain-openai
+langchain-huggingface
 langchain-community
-langsmith
-faiss-cpu
-pypdf
-python-dotenv
-langchain-groq
 langchain-text-splitters
-sentence-transformers
+faiss-cpu
 pandas
-ragas
-datasets
-flask
-flask-cors
+numpy
+sentence-transformers
+python-dotenv
+tiktoken  # Added for token counting
+
+# For various data formats
+PyPDF2
+pdfplumber
+python-docx
+openpyxl
+xlrd
+
+# For web and API
 requests
 beautifulsoup4
-duckduckgo-search
+flask
+flask-cors
+
+# For evaluation
+ragas
+datasets

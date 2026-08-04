@@ -1,82 +1,74 @@
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-import numpy as np
+# retriever.py (Simplified - Removed Hybrid Retrieval)
+"""
+Retriever module with simple FAISS retrieval.
+"""
+
+import logging
 from typing import List
-import re
+from langchain_core.documents import Document
 
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-embeddings = HuggingFaceEmbeddings(
-    model_name=EMBEDDING_MODEL
-)
+# Global retriever instance
+_retriever = None
 
-vectorstore = FAISS.load_local(
-    "vectorstore",
-    embeddings,
-    allow_dangerous_deserialization=True
-)
-
-# Primary retriever with MMR for diversity
-retriever = vectorstore.as_retriever(
-    search_type="mmr",
-    search_kwargs={
-        "k": 8,
-        "fetch_k": 20,
-        "lambda_mult": 0.5  # Balance between relevance and diversity
-    }
-)
-
-def keyword_matching(query: str, docs: List) -> List:
+def get_retriever():
     """
-    Additional keyword-based retrieval for better coverage.
+    Singleton pattern for retriever.
+    Ensures we only load the model once.
     """
-    query_words = set(query.lower().split())
-    # Remove common stopwords
-    stopwords = {'what', 'is', 'are', 'the', 'a', 'an', 'of', 'for', 'on', 'at', 'by', 'in', 'to', 'with', 'without', 'and', 'or', 'but', 'so', 'for', 'nor', 'yet', 'as', 'than'}
-    query_words = {w for w in query_words if w not in stopwords}
-    
-    # Score each document
-    scored_docs = []
-    for doc in docs:
-        content = doc.page_content.lower()
-        # Count keyword matches
-        matches = sum(1 for w in query_words if w in content)
-        # Check for section matches
-        section = str(doc.metadata.get('section', ''))
-        section_match = 2 if section.lower() in query.lower() else 0
-        
-        score = matches + section_match
-        if score > 0:
-            scored_docs.append((score, doc))
-    
-    # Sort by score and return
-    scored_docs.sort(key=lambda x: x[0], reverse=True)
-    return [doc for _, doc in scored_docs[:4]]
+    global _retriever
+    if _retriever is None:
+        logger.info(" Initializing retriever...")
+        try:
+            _retriever = create_simple_retriever()
+            logger.info(" Retriever initialized successfully!")
+        except Exception as e:
+            logger.error(f" Failed to initialize retriever: {e}")
+            _retriever = None
+    return _retriever
 
-def hybrid_retrieve(question: str) -> List:
+def create_simple_retriever():
     """
-    Hybrid retrieval combining vector search and keyword matching.
+    Simple FAISS retriever.
     """
-    # Get vector search results
-    vector_docs = retriever.invoke(question)
+    from langchain_huggingface import HuggingFaceEmbeddings
+    from langchain_community.vectorstores import FAISS
     
-    # Get keyword matches from the vector store's documents
-    keyword_docs = keyword_matching(question, vector_docs)
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
     
-    # Combine and deduplicate
-    combined = vector_docs + keyword_docs
+    vectorstore = FAISS.load_local(
+        "vectorstore",
+        embeddings,
+        allow_dangerous_deserialization=True
+    )
     
-    # Remove duplicates based on content
-    seen_content = set()
-    unique_docs = []
-    for doc in combined:
-        content_key = doc.page_content[:100]  # Use first 100 chars as key
-        if content_key not in seen_content:
-            seen_content.add(content_key)
-            unique_docs.append(doc)
-    
-    return unique_docs[:8]  # Return up to 8 documents
+    return vectorstore.as_retriever(
+        search_type="mmr",
+        search_kwargs={
+            "k": 6,  # Reduced from 8 to save tokens
+            "fetch_k": 15,
+            "lambda_mult": 0.5
+        }
+    )
 
-def retrieve(question: str) -> List:
-    """Legacy retrieve function for compatibility."""
-    return retriever.invoke(question)
+def retrieve(question: str) -> List[Document]:
+    """
+    Main retrieval function.
+    """
+    retriever = get_retriever()
+    
+    if retriever is None:
+        logger.error(" Retriever not available")
+        return []
+    
+    try:
+        docs = retriever.invoke(question)
+        logger.info(f" Retrieved {len(docs)} documents")
+        return docs
+    except Exception as e:
+        logger.error(f" Retrieval error: {e}")
+        return []

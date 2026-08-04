@@ -1,0 +1,17 @@
+{
+  "total_documents": 1946,
+  "source_files": [
+    "qanun-e-shahadat_1984.csv",
+    "general_law_pakistan.csv",
+    "Muslim_Family_Laws_Ordinance_1961.csv",
+    "Police_law.csv",
+    "Transfer property.csv",
+    "Pakistan_Penal_Code.csv",
+    "pdf_data.json"
+  ],
+  "source_types": [
+    "json",
+    "csv"
+  ],
+  "timestamp": 1785324593.2391067
+}
