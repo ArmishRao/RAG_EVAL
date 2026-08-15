@@ -1,16 +1,16 @@
+"""
+Programming Documentation Assistant
+Supports: Python, LangChain, FastAPI, PyTorch documentation
+"""
+
+import os
+import re
+import logging
 from dotenv import load_dotenv
-from langchain_ollama import ChatOllama
+from langchain_mistralai import ChatMistralAI
 from langchain_core.documents import Document
 from retriever import retrieve
 from prompt import prompt
-import requests
-from bs4 import BeautifulSoup
-import logging
-import re
-import time
-from urllib.parse import quote_plus
-from web_search_fixed import search_with_fallback
-from legal_fallback import get_fallback_answer
 import tiktoken
 
 load_dotenv()
@@ -18,14 +18,40 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from langchain_ollama import ChatOllama
+# ============================================================
+# LLM INITIALIZATION
+# ============================================================
 
-llm = ChatOllama(
-    model="qwen2.5:3b",
-    temperature=0
-)
+# Set your Mistral key here if it's not already in your .env as MISTRAL_API_KEY
+# os.environ["MISTRAL_API_KEY"] = "your-key-here"
 
-# Token counter for context management
+# Try Mistral API first
+try:
+    llm = ChatMistralAI(
+        model="mistral-small-latest",
+        temperature=0,
+        max_retries=2
+    )
+    logger.info("✅ Using Mistral API (mistral-small-latest)")
+except Exception as e:
+    logger.warning(f"⚠️ Mistral not available: {e}")
+    # Fallback to Groq if available
+    try:
+        from langchain_groq import ChatGroq
+        llm = ChatGroq(
+            model="llama-3.1-8b-instant",
+            temperature=0
+        )
+        logger.info(" Using Groq (llama-3.1-8b-instant)")
+    except Exception as e2:
+        logger.error(f" No LLM available: {e2}")
+        llm = None
+
+
+# ============================================================
+# TOKEN MANAGEMENT
+# ============================================================
+
 def count_tokens(text: str) -> int:
     """Count tokens in text using tiktoken."""
     try:
@@ -35,36 +61,61 @@ def count_tokens(text: str) -> int:
         # Fallback: approximate 4 chars per token
         return len(text) // 4
 
+
 def truncate_context(context: str, max_tokens: int = 4000) -> str:
     """
     Truncate context to stay within token limits while preserving important content.
-    Uses semantic chunking to keep the most relevant parts.
     """
     if count_tokens(context) <= max_tokens:
         return context
     
-    # Split into sentences or paragraphs
+    # Split into paragraphs
     chunks = context.split('\n\n')
     
-    # Score each chunk by relevance (length and legal keywords)
-    legal_keywords = ['section', 'act', 'punishment', 'penalty', 'court', 'judgment', 
-                     'law', 'legal', 'provision', 'article', 'clause', 'offence']
+    # Score each chunk by relevance to programming topics
+    programming_keywords = [
+        'function', 'class', 'method', 'parameter', 'return',
+        'example', 'import', 'def', 'async', 'await', 'yield',
+        'exception', 'raise', 'try', 'except', 'finally',
+        'with', 'as', 'global', 'nonlocal', 'lambda',
+        'list', 'dict', 'tuple', 'set', 'str', 'int', 'float',
+        'bool', 'None', 'True', 'False', 'if', 'else', 'elif',
+        'for', 'while', 'break', 'continue', 'pass',
+        'tensor', 'module', 'sequential', 'nn', 'fastapi',
+        'dependency', 'injection', 'runnable', 'chain', 'langchain'
+    ]
     
     scored_chunks = []
     for chunk in chunks:
         if not chunk.strip():
             continue
-        # Relevance score based on legal keywords
-        score = sum(1 for kw in legal_keywords if kw in chunk.lower())
-        # Boost chunks with section numbers
-        if re.search(r'section\s+\d+', chunk.lower()):
-            score += 3
-        if re.search(r's\.\s*\d+', chunk.lower()):
+        
+        # Score based on programming keywords
+        score = sum(1 for kw in programming_keywords if kw in chunk.lower())
+        
+        # Boost chunks with code-like patterns
+        if re.search(r'def\s+\w+\s*\(', chunk):
+            score += 5
+        if re.search(r'class\s+\w+', chunk):
+            score += 4
+        if re.search(r'```', chunk):
+            score += 3  # Code blocks
+        if re.search(r'import\s+\w+', chunk):
             score += 2
-        # Length penalty (very long chunks consume too many tokens)
+        if re.search(r'@\w+', chunk):  # Decorators
+            score += 2
+        
+        # Boost chunks with specific library names
+        libraries = ['python', 'langchain', 'fastapi', 'pytorch', 'tensorflow', 'django', 'flask']
+        for lib in libraries:
+            if lib in chunk.lower():
+                score += 3
+        
+        # Penalize very long chunks
         chunk_tokens = count_tokens(chunk)
         if chunk_tokens > 1000:
             score *= 0.5
+        
         scored_chunks.append((score, chunk))
     
     # Sort by score descending
@@ -89,71 +140,43 @@ def truncate_context(context: str, max_tokens: int = 4000) -> str:
     
     return '\n\n'.join(truncated)
 
-def is_document_relevant(doc, question):
-    """Check if a document is actually relevant to the question."""
-    content = doc.page_content.lower()
-    question_lower = question.lower()
-    
-    # Extract key topics from question
-    topic_keywords = {
-        'domestic violence': ['domestic', 'violence', 'abuse', 'cruelty', 'battered', 'spouse', 'husband', 'wife', 'protection'],
-        'theft': ['theft', 'steal', 'robbery', 'stolen', 'property'],
-        'murder': ['murder', 'kill', 'homicide', 'death', 'qatl'],
-        'divorce': ['divorce', 'talaq', 'dissolution', 'marriage', 'separation'],
-        'marriage': ['marriage', 'nikah', 'wedding', 'spouse'],
-        'minimum wage': ['wage', 'salary', 'pay', 'minimum', 'earning'],
-        'constitution': ['constitution', 'amendment', 'article', 'fundamental right'],
-        'inheritance': ['inheritance', 'heir', 'will', 'succession', 'property'],
-        'property': ['property', 'transfer', 'sale', 'purchase', 'mortgage', 'lease', 'rent', 'ownership', 'possession'],
-        'defamation': ['defamation', 'libel', 'slander', 'reputation', 'imputation'],
-        'drug': ['drug', 'narcotic', 'trafficking', 'controlled substance', 'cannabis', 'opium'],
-        'labor': ['labor', 'labour', 'employment', 'worker', 'employee', 'wage', 'salary', 'termination'],
-        'civil': ['civil', 'suit', 'plaint', 'decree', 'injunction', 'damages', 'specific performance'],
-    }
-    
-    # Find which topic the question is about
-    question_topic = None
-    for topic, keywords in topic_keywords.items():
-        if any(kw in question_lower for kw in keywords):
-            question_topic = topic
-            break
-    
-    # If we know the topic, check if document is about it
-    if question_topic:
-        topic_keywords_list = topic_keywords[question_topic]
-        matches = sum(1 for kw in topic_keywords_list if kw in content)
-        if matches < 2:
-            return False
-    
-    # Check for specific section numbers that are clearly irrelevant
-    irrelevant_sections = ['310A', '455', '495', '220', '494', '493', '496', '223', '123', '230', '10', '67']
-    section = doc.metadata.get('section', '')
-    if section in irrelevant_sections:
-        return False
-    
-    # Check if document contains "could not find" or similar phrases
-    if "could not find" in content or "not available" in content:
-        return False
-    
-    # Check if document is too short
-    if len(doc.page_content.strip()) < 50:
-        return False
-    
-    return True
 
-def web_search_fallback(question: str):
-    """Enhanced web search with multiple fallback methods."""
+# ============================================================
+# WEB SEARCH FALLBACK
+# ============================================================
+
+def web_search_fallback(question: str) -> list:
+    """Search the web for programming documentation when local results are insufficient."""
     try:
-        logger.info(f" Searching web for: {question}")
+        from web_search_fixed import search_with_fallback
+        
+        logger.info(f"🌐 Searching web for: {question[:50]}...")
         
         # Clean question for search
         clean_question = question.replace('?', '').strip()
         
-        # Try different search query variations
+        # Detect which library the question is about
+        library_keywords = {
+            'python': ['python', 'py', 'pip'],
+            'langchain': ['langchain', 'chain', 'agent', 'runnable'],
+            'fastapi': ['fastapi', 'api', 'endpoint', 'dependency'],
+            'pytorch': ['pytorch', 'torch', 'tensor', 'nn'],
+            'tensorflow': ['tensorflow', 'tf'],
+            'django': ['django'],
+            'flask': ['flask']
+        }
+        
+        detected_library = 'python'  # default
+        for lib, keywords in library_keywords.items():
+            if any(kw in question.lower() for kw in keywords):
+                detected_library = lib
+                break
+        
+        # Try different search queries
         search_queries = [
-            f"{clean_question} Pakistan law",
-            f"{clean_question} Pakistani legal",
-            f"Pakistan law {clean_question}",
+            f"{clean_question} {detected_library} documentation",
+            f"{clean_question} {detected_library} example",
+            f"{clean_question} {detected_library}",
             clean_question
         ]
         
@@ -168,48 +191,107 @@ def web_search_fallback(question: str):
             results = search_with_fallback(query)
             if results:
                 all_results.extend(results)
-                logger.info(f" Found {len(results)} results for: {query}")
+                logger.info(f"🌐 Found {len(results)} results for: {query}")
                 break
-            
-            time.sleep(0.5)
         
         if not all_results:
-            logger.warning(" No web results found")
             return []
         
         # Convert to Document objects
         docs = []
-        for result in all_results[:5]:
+        for result in all_results[:3]:
             content = result.get('body', result.get('snippet', result.get('title', '')))
-            if content and len(content.strip()) > 30:
+            if content and len(content.strip()) > 50:
                 doc = Document(
-                    page_content=content[:2000],
+                    page_content=f"{content}\n\nSource: {result.get('url', 'Web')}",
                     metadata={
-                        'source_url': result.get('url', 'N/A'),
+                        'source_url': result.get('url', 'Web'),
                         'title': result.get('title', 'Web Result'),
                         'source': 'web',
-                        'snippet': content[:300] + "..." if len(content) > 300 else content
+                        'doc_type': 'web'
                     }
                 )
                 docs.append(doc)
-                logger.info(f" Retrieved: {result.get('title', 'Unknown')[:50]}")
         
         return docs
         
     except Exception as e:
-        logger.error(f" Web search failed: {e}")
+        logger.error(f"Web search failed: {e}")
         return []
 
-def ask_rag(question: str):
-    """Main RAG function with fallback knowledge base and token optimization."""
+
+# ============================================================
+# DOCUMENT RELEVANCE CHECK
+# ============================================================
+
+def is_document_relevant(doc: Document, question: str) -> bool:
+    """
+    Check if a document is relevant to the programming question.
+    More lenient than before.
+    """
+    content = doc.page_content.lower()
+    question_lower = question.lower()
     
-    # Check for fallback answer first
-    fallback_answer = get_fallback_answer(question)
+    # Check if document is too short
+    if len(content.strip()) < 50:
+        return False
     
-    # Step 1: Try local retrieval
-    logger.info(f" Searching local vector store for: {question}")
+    # If document has code, it's likely relevant
+    if re.search(r'```', content) or re.search(r'def\s+\w+\s*\(', content) or re.search(r'class\s+\w+', content):
+        return True
+    
+    # Extract key terms from question (3+ letter words)
+    question_words = set(re.findall(r'\b[a-z][a-z]{2,}\b', question_lower))
+    
+    # Extract content terms
+    content_terms = set(re.findall(r'\b[a-z][a-z]{2,}\b', content))
+    
+    # Check for library matches
+    libraries = ['python', 'langchain', 'fastapi', 'pytorch', 'tensorflow', 'django', 'flask',
+                 'torch', 'numpy', 'pandas', 'scikit', 'matplotlib']
+    for lib in libraries:
+        if lib in question_lower and lib in content:
+            return True
+    
+    # Check for programming term overlap
+    programming_terms = {
+        'function', 'class', 'method', 'api', 'module', 'package',
+        'library', 'framework', 'syntax', 'parameter', 'argument',
+        'return', 'async', 'await', 'decorator', 'generator',
+        'iterator', 'context', 'manager', 'exception', 'error',
+        'debug', 'test', 'unittest', 'pytest', 'mock', 'patch',
+        'tensor', 'nn', 'runnable', 'chain', 'dependency', 'injection'
+    }
+    
+    question_programming_terms = question_words.intersection(programming_terms)
+    content_programming_terms = content_terms.intersection(programming_terms)
+    
+    # If both have programming terms, likely relevant
+    if question_programming_terms and content_programming_terms:
+        return True
+    
+    # Check for general keyword overlap (at least 2 common words)
+    common_words = question_words.intersection(content_terms)
+    if len(common_words) >= 2:
+        return True
+    
+    return False
+
+
+# ============================================================
+# MAIN RAG FUNCTION
+# ============================================================
+
+def ask_rag(question: str, enable_web_search: bool = True) -> dict:
+    """
+    Main RAG function for programming documentation with web fallback.
+    """
+    logger.info(f" Searching documentation for: {question[:50]}...")
+    
+    # Step 1: Retrieve documents from local vector store
     docs = retrieve(question)
     
+    # Step 2: Filter relevant documents
     relevant_docs = []
     if docs:
         for doc in docs:
@@ -219,72 +301,176 @@ def ask_rag(question: str):
         if relevant_docs:
             docs = relevant_docs
             source_type = "local"
-            logger.info(f" Found {len(docs)} relevant local documents")
+            logger.info(f" Found {len(docs)} relevant local documentation chunks")
         else:
-            logger.info(f" Found {len(docs)} documents but none are relevant")
+            logger.info(" No relevant local documentation found")
             docs = []
     
-    # Step 2: If no relevant documents, try web search
-    if not docs:
-        logger.info(" No relevant local results, trying web search...")
+    # Step 3: Try web search if no local results or too few
+    if len(docs) < 2 and enable_web_search:
+        logger.info(" Trying web search fallback...")
         web_docs = web_search_fallback(question)
-        
         if web_docs:
             docs = web_docs
             source_type = "web"
-        elif fallback_answer:
-            # Use fallback answer
-            return {
-                "Response": fallback_answer,
-                "context": "Fallback knowledge base",
-                "sources": [],
-                "source_type": "fallback"
-            }
+            logger.info(f" Found {len(docs)} results from web")
         else:
-            return {
-                "Response": """I could not find sufficient information about this in my legal database or on the web.
+            docs = []
+    
+    # Step 4: Handle no results
+    if not docs:
+        return {
+            "Response": """I couldn't find specific documentation about this topic.
 
 **Recommendations:**
-1. Try rephrasing your question
-2. Be more specific about the area of law
-3. Consult a qualified lawyer for accurate legal advice
+1. **Try rephrasing** your question to be more specific
+2. **Check the official documentation:**
+   - Python: https://docs.python.org/3/
+   - LangChain: https://python.langchain.com/docs/
+   - FastAPI: https://fastapi.tiangolo.com/
+   - PyTorch: https://pytorch.org/docs/stable/
+3. **Search Stack Overflow:** https://stackoverflow.com/
 
-**Helpful resources:**
-- Pakistan Law Commission: www.lawcommission.gov.pk
-- Pakistan Bar Council: www.pakistanbarcouncil.org""",
-                "context": "",
-                "sources": [],
-                "source_type": "none"
-            }
-    else:
-        source_type = "local"
+**Example better questions:**
+- "How do I use the map() function in Python?"
+- "What is the Runnable interface in LangChain?"
+- "How do I create a dependency in FastAPI?"
+- "How do I create a tensor in PyTorch?""",
+            "context": "",
+            "sources": [],
+            "source_type": "none"
+        }
     
-    # Step 3: Prepare and optimize context
-    # Take only the most relevant documents (limit to 3-4 to reduce tokens)
+    # Step 5: Prepare and optimize context
     if len(docs) > 4:
         docs = docs[:4]
         logger.info(f" Limited to 4 most relevant documents")
     
-    context = "\n\n".join([doc.page_content for doc in docs])
+    # Build context with source attribution
+    context_parts = []
+    for i, doc in enumerate(docs, 1):
+        source = doc.metadata.get('source_url', doc.metadata.get('source_file', 'Unknown'))
+        doc_type = doc.metadata.get('doc_type', 'unknown')
+        context_parts.append(f"[Source {i} - {doc_type} from {source}]\n{doc.page_content}")
     
-    # Truncate context to stay within token limits
+    context = "\n\n".join(context_parts)
     context = truncate_context(context, max_tokens=3500)
     logger.info(f" Context size: {count_tokens(context)} tokens")
     
-    # Step 4: Generate response
-    messages = prompt.format_messages(
-        context=context,
-        question=question
-    )
+    # Step 6: Generate response
+    if llm is None:
+        return {
+            "Response": " No LLM is available. Please configure MISTRAL_API_KEY or Groq API.",
+            "context": context,
+            "sources": docs,
+            "source_type": "error"
+        }
     
-    response = llm.invoke(messages)
+    try:
+        messages = prompt.format_messages(
+            context=context,
+            question=question
+        )
+        
+        response = llm.invoke(messages)
+        
+        return {
+            "Response": response.content,
+            "context": context,
+            "sources": docs,
+            "source_type": source_type
+        }
+        
+    except Exception as e:
+        logger.error(f" Error generating response: {e}")
+        return {
+            "Response": f"I encountered an error while generating the response: {str(e)}\n\nPlease try rephrasing your question or check if the LLM is running.",
+            "context": context,
+            "sources": docs,
+            "source_type": "error"
+        }
+
+
+# ============================================================
+# COMMAND LINE INTERFACE
+# ============================================================
+
+def main():
+    """Command line interface for the documentation assistant."""
+    print("=" * 70)
+    print("   Programming Documentation Assistant")
+    print("=" * 70)
+    print("\n This assistant can answer questions about:")
+    print("   Python, LangChain, FastAPI, PyTorch, and more!")
+    print("\n Features:")
+    print("   ✅ Local vector search")
+    print("   ✅ Web search fallback")
+    print("   ✅ Semantic understanding")
+    print("   ✅ Code examples")
+    print("   ✅ Source citations")
+    print("   ✅ Privacy-first (all local)")
+    print("\n" + "=" * 70)
     
-    return {
-        "Response": response.content,
-        "context": context,
-        "sources": docs,
-        "source_type": source_type
-    }
+    while True:
+        try:
+            question = input("\n❓ Ask a programming question (or 'exit' to quit): ")
+            
+            if question.lower() in ["exit", "quit", "q"]:
+                print("👋 Goodbye!")
+                break
+            
+            if not question.strip():
+                print("⚠️ Please enter a question.")
+                continue
+            
+            print("\n🔍 Searching documentation...")
+            result= ask_rag(question, enable_web_search=False)
+           # result = ask_rag(question)
+            
+            print("\n" + "=" * 70)
+            print(" 💡 Answer")
+            print("=" * 70)
+            print("\n" + result["Response"])
+            
+            print("\n" + "=" * 70)
+            print(" 📚 Sources")
+            print("=" * 70)
+            
+            if not result["sources"]:
+                print("No sources found.")
+            else:
+                for i, doc in enumerate(result["sources"], 1):
+                    print(f"\n Source {i}")
+                    
+                    if doc.metadata.get('source') == 'web':
+                        print(f"   🌐 Type: Web Search")
+                        print(f"   📌 Title: {doc.metadata.get('title', 'N/A')}")
+                        print(f"   🔗 URL: {doc.metadata.get('source_url', 'N/A')}")
+                    else:
+                        print(f"   📄 File: {doc.metadata.get('source_file', 'N/A')}")
+                        print(f"   📂 Type: {doc.metadata.get('doc_type', 'N/A')}")
+                        if doc.metadata.get('heading'):
+                            print(f"   📌 Heading: {doc.metadata.get('heading')}")
+                        if doc.metadata.get('title'):
+                            print(f"   📌 Title: {doc.metadata.get('title')}")
+                    
+                    # Show preview
+                    preview = doc.page_content[:200].replace('\n', ' ')
+                    print(f"   📝 Preview: {preview}...")
+            
+            print("\n" + "=" * 70)
+            
+        except KeyboardInterrupt:
+            print("\n\n👋 Goodbye!")
+            break
+        except Exception as e:
+            print(f"\n❌ Error: {e}")
+            print("Please try again with a different question.")
+
+
+# ============================================================
+# API FUNCTION (for Flask/Streamlit)
+# ============================================================
 
 def get_response_only(question: str) -> dict:
     """
@@ -293,79 +479,10 @@ def get_response_only(question: str) -> dict:
     """
     return ask_rag(question)
 
-def main():
-    print("=" * 70)
-    print("  Pakistan Legal Advisor (Multi-Source Search)")
-    print("=" * 70)
-    print("\n Features:")
-    print("   Answers from local legal documents")
-    print("   Smart relevance detection")
-    print("   Web search from multiple sources")
-    print("   Fallback knowledge base for common questions")
-    print("   No API keys required")
-    print("\n" + "=" * 70)
-    
-    while True:
-        try:
-            question = input("\n Ask Question (or 'exit' to quit): ")
-            
-            if question.lower() in ["exit", "quit"]:
-                print("Goodbye!")
-                break
-            
-            if not question.strip():
-                print(" Please enter a question.")
-                continue
-            
-            print("\n Processing your question...")
-            result = ask_rag(question)
-            
-            print("\n" + "=" * 70)
-            print(" Answer")
-            print("=" * 70)
-            
-            if result["source_type"] == "web":
-                print(" Answer from: Web Search")
-            elif result["source_type"] == "local":
-                print(" Answer from: Legal Database")
-            elif result["source_type"] == "fallback":
-                print(" Answer from: Knowledge Base")
-            else:
-                print(" No sources found")
-            
-            print("\n" + result["Response"])
-            
-            print("\n" + "=" * 70)
-            print(" Sources")
-            print("=" * 70)
-            
-            if len(result["sources"]) == 0:
-                if result["source_type"] == "fallback":
-                    print("Source: Fallback Knowledge Base")
-                else:
-                    print("No sources found.")
-            else:
-                for i, doc in enumerate(result["sources"], 1):
-                    print(f"\n Source {i}")
-                    
-                    if doc.metadata.get('source') == 'web':
-                        print(" Type: Web Search")
-                        print("Title:", doc.metadata.get('title', 'N/A'))
-                        print("URL  :", doc.metadata.get('source_url', 'N/A'))
-                        print("Snippet:", doc.metadata.get('snippet', 'N/A')[:150] + "..." if len(doc.metadata.get('snippet', '')) > 150 else doc.metadata.get('snippet', 'N/A'))
-                    else:
-                        print(" Type: Legal Database")
-                        print("Book   :", doc.metadata.get('book', 'N/A'))
-                        print("Section:", doc.metadata.get('section', 'N/A'))
-                        print("Heading:", doc.metadata.get('heading', 'N/A'))
-                        print("Dataset:", doc.metadata.get('source_file', 'N/A'))
-                        
-        except KeyboardInterrupt:
-            print("\n\n Goodbye!")
-            break
-        except Exception as e:
-            print(f"\n Error: {e}")
-            print("Please try again with a different question.")
+
+# ============================================================
+# ENTRY POINT
+# ============================================================
 
 if __name__ == "__main__":
     main()

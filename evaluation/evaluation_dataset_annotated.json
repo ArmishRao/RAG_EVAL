@@ -1,0 +1,635 @@
+[
+  {
+    "question_id": "Q0001",
+    "question": "What does torch.no_grad() do?",
+    "ground_truth": "torch.no_grad() is a context manager that disables gradient calculation, reducing memory consumption for computations that would otherwise have requires_grad=True; it is typically used during inference.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.no_grad",
+    "category": "Autograd",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "autograd.md::No-grad Mode::2",
+      "torch.md::Parallelism::1",
+      "autograd.md::No-grad Mode::1"
+    ]
+  },
+  {
+    "question_id": "Q0002",
+    "question": "What is a generator in Python?",
+    "ground_truth": "A generator is a function that returns a generator iterator, using yield expressions to produce a series of values that can be iterated over one at a time.",
+    "documentation_source": "Python",
+    "source_document": "Glossary - generator",
+    "category": "Definitions",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "2.2.rst::PEP 237: Unifying Long Integers and Integers::4",
+      "2.3.rst::PEP 263: Source Code Encodings::4",
+      "2.5.rst::PEP 343: The 'with' statement::2",
+      "functional.rst::Built-in functions::4"
+    ]
+  },
+  {
+    "question_id": "Q0003",
+    "question": "How do you open a file for reading using Python's open() function?",
+    "ground_truth": "Use open(file, mode) with mode set to 'r', the default mode, e.g. open('myfile.txt', 'r'), to open the file for reading in text mode.",
+    "documentation_source": "Python",
+    "source_document": "Built-in Functions - open()",
+    "category": "API Usage",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "inputoutput.rst::Section 3::1"
+    ]
+  },
+  {
+    "question_id": "Q0004",
+    "question": "What does the sep parameter do in Python's print() function?",
+    "ground_truth": "The sep parameter specifies the string inserted between the values being printed, defaulting to a single space.",
+    "documentation_source": "Python",
+    "source_document": "Built-in Functions - print()",
+    "category": "Parameters",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "3.0.rst::Overview Of Syntax Changes::2",
+      "2.6.rst::PEP 3110: Exception-Handling Changes::2",
+      "functions.rst::Section 2::159",
+      "functions.rst::Section 2::158"
+    ]
+  },
+  {
+    "question_id": "Q0005",
+    "question": "What does list.pop() return when called without arguments?",
+    "ground_truth": "list.pop() removes and returns the last item in the list; with an optional index argument, it removes and returns the item at that index instead.",
+    "documentation_source": "Python",
+    "source_document": "Data Structures - More on Lists",
+    "category": "Return Values",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "datastructures.rst::The :keyword:`!del` statement::3",
+      "stdtypes.rst::Text and Binary Sequence Type Methods Summary::32"
+    ]
+  },
+  {
+    "question_id": "Q0006",
+    "question": "What is the difference between list.append() and list.extend() in Python?",
+    "ground_truth": "list.append(x) adds a single item x to the end of the list, while list.extend(iterable) appends all items from the given iterable individually.",
+    "documentation_source": "Python",
+    "source_document": "Data Structures - More on Lists",
+    "category": "Comparisons",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "list.rst::full::14",
+      "general.rst::Section 5::18"
+    ]
+  },
+  {
+    "question_id": "Q0007",
+    "question": "How can you specify text encoding when opening a file with open()?",
+    "ground_truth": "Pass the encoding parameter, e.g. open('file.txt', encoding='utf-8'); it is recommended to always specify encoding explicitly since the default is platform dependent.",
+    "documentation_source": "Python",
+    "source_document": "Built-in Functions - open()",
+    "category": "Configuration",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "io.rst::Section 2::11",
+      "inputoutput.rst::Section 3::3"
+    ]
+  },
+  {
+    "question_id": "Q0008",
+    "question": "What naming convention does PEP 8 recommend for function and variable names?",
+    "ground_truth": "PEP 8 recommends lowercase words separated by underscores (snake_case) for function and variable names to improve readability.",
+    "documentation_source": "Python",
+    "source_document": "PEP 8 - Style Guide for Python Code",
+    "category": "Best Practices",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "controlflow.rst::Section 11::4"
+    ]
+  },
+  {
+    "question_id": "Q0009",
+    "question": "What is the purpose of the 'else' clause in a Python try/except statement?",
+    "ground_truth": "The else clause runs if the try block completed without raising an exception, and is useful for code that should execute only when no exception occurred.",
+    "documentation_source": "Python",
+    "source_document": "Errors and Exceptions - Handling Exceptions",
+    "category": "Error Handling",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "errors.rst::Raising Exceptions::11",
+      "errors.rst::Raising Exceptions::12",
+      "errors.rst::Predefined Clean-up Actions::7"
+    ]
+  },
+  {
+    "question_id": "Q0010",
+    "question": "What typically causes a RecursionError in Python?",
+    "ground_truth": "A RecursionError is raised when the maximum recursion depth is exceeded, typically from a function calling itself too many times without terminating.",
+    "documentation_source": "Python",
+    "source_document": "Built-in Exceptions - RecursionError",
+    "category": "Troubleshooting",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "sys.rst::Section 2::157",
+      "exceptions.rst::Section 2::38"
+    ]
+  },
+  {
+    "question_id": "Q0011",
+    "question": "How does copy.deepcopy() differ from copy.copy() in Python?",
+    "ground_truth": "copy.copy() creates a shallow copy referencing the original nested objects, while copy.deepcopy() recursively copies all nested objects to create a fully independent copy.",
+    "documentation_source": "Python",
+    "source_document": "copy - Shallow and deep copy operations",
+    "category": "Comparisons",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "copy.rst::Section 2::1",
+      "copy.rst::Section 2::8"
+    ]
+  },
+  {
+    "question_id": "Q0012",
+    "question": "Why is the 'with' statement preferred for resource management in Python?",
+    "ground_truth": "The with statement calls __enter__() before the block and __exit__() after it, even if an exception occurs, guaranteeing cleanup such as closing a file automatically without needing a try/finally block.",
+    "documentation_source": "Python",
+    "source_document": "Compound Statements - The with statement",
+    "category": "Workflows",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "2.5.rst::PEP 352: Exceptions as New-Style Classes::3"
+    ]
+  },
+  {
+    "question_id": "Q0013",
+    "question": "What role does await play in how the asyncio event loop schedules coroutines?",
+    "ground_truth": "When a coroutine hits an await on something not yet ready, control returns to the event loop, which can run other scheduled tasks until the awaited operation is ready, enabling cooperative multitasking in a single thread.",
+    "documentation_source": "Python",
+    "source_document": "asyncio - Coroutines and Tasks",
+    "category": "Multi-step Reasoning",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "a-conceptual-overview-of-asyncio.rst::Section 9::8",
+      "a-conceptual-overview-of-asyncio.rst::Section 9::3"
+    ]
+  },
+  {
+    "question_id": "Q0014",
+    "question": "What is a Chain in LangChain?",
+    "ground_truth": "A Chain refers to a sequence of calls, whether to an LLM, a tool, or a data preprocessing step, linked together to accomplish a task.",
+    "documentation_source": "LangChain",
+    "source_document": "Concepts - Chains",
+    "category": "Definitions",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "ollama.mdx::Usage::3"
+    ]
+  },
+  {
+    "question_id": "Q0015",
+    "question": "How do you create a PromptTemplate in LangChain?",
+    "ground_truth": "Use PromptTemplate.from_template(template_string), where the template contains variables in curly braces, e.g. PromptTemplate.from_template('Tell me a joke about {topic}').",
+    "documentation_source": "LangChain",
+    "source_document": "Prompts - PromptTemplate",
+    "category": "API Usage",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "google_vertex_ai.mdx::invoke a model response::68",
+      "openvino.mdx::Create chain::1"
+    ]
+  },
+  {
+    "question_id": "Q0016",
+    "question": "What does the input_variables parameter of a PromptTemplate specify?",
+    "ground_truth": "It is a list of the variable names the prompt template expects to be filled in when the template is formatted.",
+    "documentation_source": "LangChain",
+    "source_document": "Prompts - PromptTemplate",
+    "category": "Parameters",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "anthropic.mdx::Prompt templates::1",
+      "openai.mdx::Prompt templates::1"
+    ]
+  },
+  {
+    "question_id": "Q0017",
+    "question": "What does calling .invoke() on a LangChain Runnable return?",
+    "ground_truth": ".invoke() calls the Runnable with a single input and returns a single output, transforming the input per that Runnable's logic.",
+    "documentation_source": "LangChain",
+    "source_document": "LangChain Expression Language (LCEL) - Runnable Interface",
+    "category": "Return Values",
+    "difficulty": "medium",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0018",
+    "question": "What is a RunnableSequence in LangChain?",
+    "ground_truth": "A RunnableSequence is a Runnable composed of other Runnables invoked in order, where each step's output feeds the next, commonly built with the pipe (|) operator.",
+    "documentation_source": "LangChain",
+    "source_document": "LangChain Expression Language (LCEL) - RunnableSequence",
+    "category": "Classes",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "perplexity_search.mdx::Use within a chain::2"
+    ]
+  },
+  {
+    "question_id": "Q0019",
+    "question": "How does the .run() method differ from .invoke() on a legacy LangChain Chain?",
+    "ground_truth": ".run() is a legacy convenience method for chains with a single input/output key, taking and returning a plain string, while .invoke() takes and returns dictionaries, supporting more general cases.",
+    "documentation_source": "LangChain",
+    "source_document": "Chains - Legacy Chain Interface",
+    "category": "Methods",
+    "difficulty": "medium",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0020",
+    "question": "How do you configure the temperature setting when initializing a ChatOpenAI model in LangChain?",
+    "ground_truth": "Pass the temperature parameter at instantiation, e.g. ChatOpenAI(temperature=0), which controls the randomness of the model's output.",
+    "documentation_source": "LangChain",
+    "source_document": "Chat Models - ChatOpenAI",
+    "category": "Configuration",
+    "difficulty": "easy",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0021",
+    "question": "How can errors from an output parser be handled when LLM output doesn't match the expected format?",
+    "ground_truth": "LangChain provides parsers like OutputFixingParser and RetryOutputParser that wrap a base parser and attempt to fix or retry parsing when it raises an error on malformed output.",
+    "documentation_source": "LangChain",
+    "source_document": "Output Parsers - Handling Parsing Errors",
+    "category": "Error Handling",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "langchain_decorators.mdx::Output parsers::1"
+    ]
+  },
+  {
+    "question_id": "Q0022",
+    "question": "Why might a LangChain chain raise an error about a missing input variable?",
+    "ground_truth": "This occurs when the input dictionary lacks a key matching a variable declared in the PromptTemplate's input_variables, so the template cannot be formatted.",
+    "documentation_source": "LangChain",
+    "source_document": "Prompts - PromptTemplate",
+    "category": "Troubleshooting",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "prompt-template-format.mdx::Output::1"
+    ]
+  },
+  {
+    "question_id": "Q0023",
+    "question": "How do ConversationBufferMemory and ConversationSummaryMemory differ in LangChain?",
+    "ground_truth": "ConversationBufferMemory stores full raw message history, while ConversationSummaryMemory periodically summarizes the conversation with an LLM to reduce token usage over long conversations.",
+    "documentation_source": "LangChain",
+    "source_document": "Memory - Memory Types",
+    "category": "Comparisons",
+    "difficulty": "hard",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0024",
+    "question": "What are the main steps to build a retrieval-augmented generation (RAG) pipeline using LangChain?",
+    "ground_truth": "Load documents, split them into chunks, embed and store them in a vector store, create a retriever, then compose a chain passing retrieved context and the question into a prompt template and LLM.",
+    "documentation_source": "LangChain",
+    "source_document": "Retrieval - Retrieval Augmented Generation (RAG)",
+    "category": "Workflows",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "evaluate-rag-tutorial.mdx::Build the application::1"
+    ]
+  },
+  {
+    "question_id": "Q0025",
+    "question": "What happens in a RunnableBranch if no condition matches the input?",
+    "ground_truth": "RunnableBranch evaluates its (condition, Runnable) pairs in order and routes to the first match; if none match, it falls back to the default Runnable supplied at initialization.",
+    "documentation_source": "LangChain",
+    "source_document": "LangChain Expression Language (LCEL) - RunnableBranch",
+    "category": "Multi-step Reasoning",
+    "difficulty": "hard",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0026",
+    "question": "What is FastAPI according to its official documentation?",
+    "ground_truth": "FastAPI is a modern, fast (high-performance) web framework for building APIs with Python based on standard type hints, built on Starlette and Pydantic.",
+    "documentation_source": "FastAPI",
+    "source_document": "FastAPI - Introduction",
+    "category": "Definitions",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "index.md::FastAPI { #fastapi }::4"
+    ]
+  },
+  {
+    "question_id": "Q0027",
+    "question": "How do you define a path parameter in a FastAPI path operation function?",
+    "ground_truth": "Declare it in the path using curly braces and match it with a function parameter of the same name and a type annotation, e.g. @app.get('/items/{item_id}') async def read_item(item_id: int).",
+    "documentation_source": "FastAPI",
+    "source_document": "Path Parameters",
+    "category": "API Usage",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "body.md::Request body + path parameters { #request-body-path-parameters }::2",
+      "body.md::Request body + path parameters { #request-body-path-parameters }::1",
+      "path-params.md::Path Parameters { #path-parameters }::1"
+    ]
+  },
+  {
+    "question_id": "Q0028",
+    "question": "What does the response_model parameter do in a FastAPI path operation decorator?",
+    "ground_truth": "response_model declares the Pydantic model used to validate, document, and filter the output data returned by the path operation.",
+    "documentation_source": "FastAPI",
+    "source_document": "Response Model",
+    "category": "Parameters",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "response-model.md::Response Model - Return Type { #response-model-return-type }::3",
+      "response-model.md::`response_model` Parameter { #response-model-parameter }::1",
+      "response-model.md::Response Model - Return Type { #response-model-return-type }::2"
+    ]
+  },
+  {
+    "question_id": "Q0029",
+    "question": "What does FastAPI's Depends() function do?",
+    "ground_truth": "Depends() declares a dependency; FastAPI calls it before the path operation function and injects its return value into the corresponding parameter.",
+    "documentation_source": "FastAPI",
+    "source_document": "Dependencies - First Steps",
+    "category": "Return Values",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "index.md::Import `Depends` { #import-depends }::2"
+    ]
+  },
+  {
+    "question_id": "Q0030",
+    "question": "What role does Pydantic's BaseModel play in FastAPI?",
+    "ground_truth": "BaseModel defines the shape and types of request and response bodies as Python classes; FastAPI uses these to validate incoming data, serialize outgoing data, and generate API documentation.",
+    "documentation_source": "FastAPI",
+    "source_document": "Request Body",
+    "category": "Classes",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "body.md::Import Pydantic's `BaseModel` { #import-pydantics-basemodel }::1",
+      "response-model.md::Response Model - Return Type { #response-model-return-type }::3",
+      "alternatives.md::Used by **FastAPI** { #used-by-fastapi }::1"
+    ]
+  },
+  {
+    "question_id": "Q0031",
+    "question": "How do you enable CORS in a FastAPI application?",
+    "ground_truth": "Add CORSMiddleware from fastapi.middleware.cors via app.add_middleware(CORSMiddleware, allow_origins=[...], allow_credentials=True, allow_methods=[...], allow_headers=[...]).",
+    "documentation_source": "FastAPI",
+    "source_document": "CORS (Cross-Origin Resource Sharing)",
+    "category": "Configuration",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "cors.md::Wildcards { #wildcards }::1",
+      "cors.md::Simple requests { #simple-requests }::1",
+      "cors.md::Wildcards { #wildcards }::2",
+      "cors.md::Wildcards { #wildcards }::5",
+      "cors.md::Wildcards { #wildcards }::4"
+    ]
+  },
+  {
+    "question_id": "Q0032",
+    "question": "What is the recommended pattern for managing a database session per request in FastAPI?",
+    "ground_truth": "Create a dependency function that yields a database session inside a try/finally block, closing it after the request, and use Depends() so each request gets a fresh session.",
+    "documentation_source": "FastAPI",
+    "source_document": "SQL (Relational) Databases - Dependencies with yield",
+    "category": "Best Practices",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "sql-databases.md::Create the Tables { #create-the-tables }::1"
+    ]
+  },
+  {
+    "question_id": "Q0033",
+    "question": "How do you raise a custom HTTP error response in FastAPI?",
+    "ground_truth": "Raise an HTTPException from fastapi with a status_code and optional detail message, e.g. raise HTTPException(status_code=404, detail='Item not found').",
+    "documentation_source": "FastAPI",
+    "source_document": "Handling Errors",
+    "category": "Error Handling",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "exceptions.md::full::1",
+      "handling-errors.md::Raise an `HTTPException` in your code { #raise-an-httpexception-in-your-code }::2",
+      "handling-errors.md::Raise an `HTTPException` in your code { #raise-an-httpexception-in-your-code }::1"
+    ]
+  },
+  {
+    "question_id": "Q0034",
+    "question": "Why can blocking synchronous code inside an 'async def' path operation cause performance problems in FastAPI?",
+    "ground_truth": "Blocking code called directly inside async def runs in the event loop itself, blocking it and preventing FastAPI from handling other requests concurrently until it finishes.",
+    "documentation_source": "FastAPI",
+    "source_document": "Concurrency and async / await",
+    "category": "Troubleshooting",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "agent-server-scale.mdx::Avoid synchronous blocking operations::1"
+    ]
+  },
+  {
+    "question_id": "Q0035",
+    "question": "What is the difference between declaring a path operation with 'def' versus 'async def' in FastAPI?",
+    "ground_truth": "An async def path operation runs directly in the event loop, while a regular def path operation is run by FastAPI in an external threadpool.",
+    "documentation_source": "FastAPI",
+    "source_document": "Concurrency and async / await",
+    "category": "Comparisons",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "async.md::Very Technical Details { #very-technical-details }::1"
+    ]
+  },
+  {
+    "question_id": "Q0036",
+    "question": "How does FastAPI handle sub-dependencies, and what is the benefit of dependency caching?",
+    "ground_truth": "Dependencies can themselves declare further dependencies via Depends(), forming a resolution tree; FastAPI caches each dependency's result per request by default, so a dependency used multiple times is only called once.",
+    "documentation_source": "FastAPI",
+    "source_document": "Dependencies - Sub-dependencies",
+    "category": "Workflows",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "release-notes.md::0.28.0 (2019-06-05)::3",
+      "sub-dependencies.md::Use the dependency { #use-the-dependency }::2",
+      "release-notes.md::0.28.0 (2019-06-05)::2",
+      "sub-dependencies.md::Use the dependency { #use-the-dependency }::1"
+    ]
+  },
+  {
+    "question_id": "Q0037",
+    "question": "What does FastAPI's TestClient allow you to do?",
+    "ground_truth": "TestClient, based on httpx, lets you send requests directly to a FastAPI app in tests without running a real server, and assert on the returned response.",
+    "documentation_source": "FastAPI",
+    "source_document": "Testing",
+    "category": "Classes",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "testclient.md::full::1",
+      "testing.md::Testing { #testing }::1"
+    ]
+  },
+  {
+    "question_id": "Q0038",
+    "question": "Why might a FastAPI endpoint return a 422 Unprocessable Entity response?",
+    "ground_truth": "A 422 is returned when request data fails validation against the declared Pydantic models or parameter types, meaning the request reached the server but its content doesn't match the expected schema.",
+    "documentation_source": "FastAPI",
+    "source_document": "Handling Errors - Request Validation",
+    "category": "Troubleshooting",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "path-params.md::Data <dfn title=\"also known as: serialization, parsing, marshalling\">conversion</dfn> { #data-conversion }::2",
+      "additional-responses.md::Additional Responses in OpenAPI { #additional-responses-in-openapi }::6"
+    ]
+  },
+  {
+    "question_id": "Q0039",
+    "question": "What is a Tensor in PyTorch?",
+    "ground_truth": "A torch.Tensor is a multi-dimensional matrix of elements of a single data type, similar to NumPy ndarrays, but usable on GPUs to accelerate computing.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.Tensor",
+    "category": "Definitions",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "tensors.md::torch.Tensor::1"
+    ]
+  },
+  {
+    "question_id": "Q0040",
+    "question": "How do you create a tensor from a Python list using PyTorch?",
+    "ground_truth": "Use torch.tensor(data), e.g. torch.tensor([1, 2, 3]), which creates a new tensor inferring its dtype automatically.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.tensor",
+    "category": "API Usage",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "tensors.md::Initializing and basic operations::1"
+    ]
+  },
+  {
+    "question_id": "Q0041",
+    "question": "What does the requires_grad parameter do when creating a PyTorch tensor?",
+    "ground_truth": "When set to True, requires_grad tells autograd to track all operations on the tensor so gradients can be computed for it during backpropagation.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.Tensor - Attributes",
+    "category": "Parameters",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "autograd.md::Setting ``requires_grad``::1",
+      "tensors.md::Initializing and basic operations::5"
+    ]
+  },
+  {
+    "question_id": "Q0042",
+    "question": "What does calling .backward() on a PyTorch tensor return?",
+    "ground_truth": ".backward() returns None; it computes gradients with respect to graph leaves and accumulates them into the .grad attribute of those leaf tensors.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.Tensor.backward",
+    "category": "Return Values",
+    "difficulty": "medium",
+    "expected_chunks": []
+  },
+  {
+    "question_id": "Q0043",
+    "question": "What is nn.Module in PyTorch?",
+    "ground_truth": "torch.nn.Module is the base class for all neural network modules; custom models subclass it, and submodules assigned as attributes are automatically tracked for parameter management and device placement.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.nn.Module",
+    "category": "Classes",
+    "difficulty": "easy",
+    "expected_chunks": [
+      "modules.md::A Simple Custom Module::3",
+      "pytorch_main_components.md::PyTorch Components for Basic Deep Learning::2"
+    ]
+  },
+  {
+    "question_id": "Q0044",
+    "question": "What is the difference between Tensor.view() and Tensor.reshape() in PyTorch?",
+    "ground_truth": "view() requires the tensor to be contiguous and returns a new view sharing the same data, while reshape() will copy the data if necessary when the original isn't contiguous, making it more flexible.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.Tensor.view / torch.Tensor.reshape",
+    "category": "Methods",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "tensor_view.md::Tensor Views::1",
+      "tensor_view.md::copying data when `t` is not contiguous.::6"
+    ]
+  },
+  {
+    "question_id": "Q0045",
+    "question": "How do you move a PyTorch model and its tensors to a GPU device?",
+    "ground_truth": "Call .to(device) on both the model and input tensors, where device is obtained via torch.device('cuda') or a string like 'cuda:0'.",
+    "documentation_source": "PyTorch",
+    "source_document": "torch.nn.Module.to / CUDA Semantics",
+    "category": "Configuration",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "cuda.md::Device-agnostic code::2",
+      "hip.rst::Section 2::4",
+      "modules.md::Move all parameters to a CUDA device::1"
+    ]
+  },
+  {
+    "question_id": "Q0046",
+    "question": "What is the recommended way to save and load a PyTorch model for inference?",
+    "ground_truth": "Save only the model's state_dict with torch.save(model.state_dict(), PATH); to load, instantiate the model class, call model.load_state_dict(torch.load(PATH)), then model.eval().",
+    "documentation_source": "PyTorch",
+    "source_document": "Saving and Loading Models",
+    "category": "Best Practices",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "modules.md::Save and load state_dict.::1",
+      "modules.md::Save the module::1"
+    ]
+  },
+  {
+    "question_id": "Q0047",
+    "question": "What commonly causes a 'CUDA out of memory' error in PyTorch?",
+    "ground_truth": "It occurs when the GPU lacks enough free memory to allocate requested tensors, often due to too large a batch size, tensors holding onto the computation graph, or unreleased cached memory.",
+    "documentation_source": "PyTorch",
+    "source_document": "CUDA Semantics - Memory Management",
+    "category": "Error Handling",
+    "difficulty": "medium",
+    "expected_chunks": [
+      "faq.md::My model reports \"cuda runtime error(2): out of memory\"::1",
+      "faq.md::Frequently Asked Questions::8"
+    ]
+  },
+  {
+    "question_id": "Q0048",
+    "question": "Why does calling loss.backward() a second time on the same graph raise a RuntimeError, and how can it be resolved?",
+    "ground_truth": "PyTorch frees intermediate graph buffers after the first backward() call by default, so a second call fails; passing retain_graph=True to the first call preserves the buffers for reuse.",
+    "documentation_source": "PyTorch",
+    "source_document": "Autograd - torch.autograd.backward",
+    "category": "Troubleshooting",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "autograd.md::Registering default hooks for saved tensors::3"
+    ]
+  },
+  {
+    "question_id": "Q0049",
+    "question": "What is the key difference between torch.nn.DataParallel and DistributedDataParallel in PyTorch?",
+    "ground_truth": "DataParallel uses a single process with multiple threads, limited by the GIL and generally slower, while DistributedDataParallel uses multiple processes and is the recommended, faster approach even on a single machine.",
+    "documentation_source": "PyTorch",
+    "source_document": "DataParallel vs DistributedDataParallel",
+    "category": "Comparisons",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "cuda.md::Use nn.parallel.DistributedDataParallel instead of multiprocessing or nn.DataParallel::3"
+    ]
+  },
+  {
+    "question_id": "Q0050",
+    "question": "What are the essential steps performed inside a typical PyTorch training loop for each batch of data?",
+    "ground_truth": "For each batch: call optimizer.zero_grad(), run a forward pass, compute the loss, call loss.backward() to compute gradients, then call optimizer.step() to update parameters.",
+    "documentation_source": "PyTorch",
+    "source_document": "Optimizing Model Parameters",
+    "category": "Workflows",
+    "difficulty": "hard",
+    "expected_chunks": [
+      "torch.compiler_aot_compile.md::train_tp.py -- run with: torchrun --nproc_per_node=8 train_tp.py::4",
+      "modules.md::(see discussion below for a description of training and evaluation modes)::2",
+      "get_start_xpu.md::Training Examples::4",
+      "get_start_xpu.md::Train with AMP::4"
+    ]
+  }
+]

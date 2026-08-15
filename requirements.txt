@@ -1,5 +1,5 @@
 # Core dependencies
-langchain
+langchain>=0.1.0
 langchain-huggingface
 langchain-community
 langchain-text-splitters
@@ -8,21 +8,30 @@ pandas
 numpy
 sentence-transformers
 python-dotenv
-tiktoken  # Added for token counting
+tiktoken
 
-# For various data formats
+# Document parsing
 PyPDF2
 pdfplumber
 python-docx
 openpyxl
 xlrd
-
-# For web and API
-requests
 beautifulsoup4
+markdown
+
+# LLM
+langchain-ollama
+# Or use Groq:
+# langchain-groq
+
+# Web and API
+requests
 flask
 flask-cors
 
-# For evaluation
-ragas
-datasets
+# UI
+streamlit
+
+# Utilities
+python-magic
+chardet
